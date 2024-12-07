@@ -1,0 +1,9 @@
+destination: E:\Your\Backup\Location
+jobs:
+  - name: Example
+    dirs:
+      - D:\Some\Folder\Somewhere
+      - D:\Some\Folder\AlsoThere
+  - name: ExampleTwo
+    dirs:
+      - C:\Test
