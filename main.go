@@ -17,7 +17,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%v\n", backup)
 	err = backup.RunBackup()
 	if err != nil {
 		log.Fatal(err)
@@ -35,16 +34,24 @@ type Job struct {
 }
 
 func (bckp Backup) RunBackup() error {
+	const workerCount = 5
 	var wg sync.WaitGroup
+	jobChan := make(chan Job)
 	errChan := make(chan error, len(bckp.Jobs))
-	for _, job := range bckp.Jobs {
+	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
-		go func(job Job) {
-			log.Println("Starting job:", job.Name, "for Folder(s):", job.Dirs)
-			bckp.ZipWriter(job, errChan)
-			wg.Done()
-		}(job)
+		go func() {
+			defer wg.Done()
+			jobWorker(bckp.Destination, jobChan, errChan)
+		}()
 	}
+	go func() {
+		for _, job := range bckp.Jobs {
+			jobChan <- job
+		}
+		close(jobChan)
+	}()
+
 	go func() {
 		wg.Wait()
 		close(errChan)
@@ -59,9 +66,16 @@ func (bckp Backup) RunBackup() error {
 	return nil
 }
 
-func (bckp Backup) ZipWriter(job Job, errChan chan error) {
+func jobWorker(destination string, jobs <-chan Job, errChan chan<- error) {
+	for job := range jobs {
+		log.Println("Starting job:", job.Name, "for Folder(s):", job.Dirs)
+		ZipWriter(destination, job, errChan)
+	}
+}
+
+func ZipWriter(destination string, job Job, errChan chan<- error) {
 	timeSuffix := time.Now().Format(time.DateOnly)
-	outFile, err := os.Create(filepath.Join(bckp.Destination, job.Name) + "_" + timeSuffix + ".zip")
+	outFile, err := os.Create(filepath.Join(destination, job.Name) + "_" + timeSuffix + ".zip")
 	if err != nil {
 		errChan <- err
 	}
@@ -81,7 +95,7 @@ func (bckp Backup) ZipWriter(job Job, errChan chan error) {
 
 func addFiles(w *zip.Writer, basePath string) error {
 	walker := func(path string, info os.FileInfo, err error) error {
-		// log.Println("Crawling: %#v\n", path)
+		log.Printf("Crawling: %#v\n", path)
 		if err != nil {
 			return err
 		}
