@@ -95,7 +95,7 @@ func ZipWriter(destination string, job Job, errChan chan<- error) {
 
 func addFiles(w *zip.Writer, basePath string) error {
 	walker := func(path string, info os.FileInfo, err error) error {
-		log.Printf("Crawling: %#v\n", path)
+		// log.Printf("Crawling: %#v\n", path)
 		if err != nil {
 			return err
 		}
@@ -105,9 +105,9 @@ func addFiles(w *zip.Writer, basePath string) error {
 			return err
 		}
 		if info.IsDir() {
-			//	path = fmt.Sprintf("%s%c", path, os.PathSeparator)
-			//	_, err = w.Create(path)
-			//	return err
+			// path = fmt.Sprintf("%s%c", path, os.PathSeparator)
+			// _, err = w.Create(path)
+			// return err
 			return nil
 		}
 		file, err := os.Open(path)
