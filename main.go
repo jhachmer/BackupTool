@@ -68,8 +68,10 @@ func (bckp Backup) RunBackup() error {
 
 func jobWorker(destination string, jobs <-chan Job, errChan chan<- error) {
 	for job := range jobs {
-		log.Println("Starting job:", job.Name, "for Folder(s):", job.Dirs)
+		start := time.Now()
+		log.Printf("Starting job: %s", job.Name)
 		ZipWriter(destination, job, errChan)
+		log.Printf("Finished job: %s; took %v", job.Name, time.Since(start))
 	}
 }
 
