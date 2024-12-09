@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -34,7 +35,7 @@ type Job struct {
 }
 
 func (bckp Backup) RunBackup() error {
-	const workerCount = 5
+	var workerCount = runtime.NumCPU()
 	var wg sync.WaitGroup
 	jobChan := make(chan Job)
 	errChan := make(chan error, len(bckp.Jobs))
