@@ -88,9 +88,9 @@ func ZipWriter(destination string, job Job, errChan chan<- error) {
 		err = addFiles(w, jobDir)
 		if err != nil {
 			errChan <- err
+			return
 		}
 	}
-	log.Println("Finished job:", job.Name)
 }
 
 func addFiles(w *zip.Writer, basePath string) error {
