@@ -74,8 +74,8 @@ func jobWorker(destination string, jobs <-chan Job, errChan chan<- error) {
 }
 
 func ZipWriter(destination string, job Job, errChan chan<- error) {
-	timeSuffix := time.Now().Format(time.DateOnly)
-	outFile, err := os.Create(filepath.Join(destination, job.Name) + "_" + timeSuffix + ".zip")
+	dateSuffix := time.Now().Format(time.DateOnly)
+	outFile, err := os.Create(filepath.Join(destination, job.Name) + "_" + dateSuffix + ".zip")
 	if err != nil {
 		errChan <- err
 	}
