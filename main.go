@@ -18,9 +18,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = backup.RunBackup()
+	dirOk, err := checkIfBackupDirExists(backup.Destination)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if !dirOk {
+		err = os.Mkdir(backup.Destination, 0750)
+	}
+	if err != nil && os.IsNotExist(err) {
+		log.Fatal(err)
+	}
+
+	err = backup.RunBackup()
+	if err != nil {
+		log.Fatal("Error while running backup jobs:", err)
 	}
 }
 
@@ -32,6 +43,17 @@ type Backup struct {
 type Job struct {
 	Name string
 	Dirs []string
+}
+
+func checkIfBackupDirExists(dir string) (bool, error) {
+	_, err := os.Stat(dir)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func (bckp Backup) RunBackup() error {
